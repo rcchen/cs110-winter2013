@@ -1,0 +1,65 @@
+Question 1
+
+a) i - Block layer, by modifying the size of the disk in the superblock
+as well as other information that describes the layout of the blocks
+and file system on the disk. ii - Block layer, by modifying the size of
+each block (512-bytes in v6 versus 8-kilobytes in modern systems) and
+file layer, which may need to implement triply indirected blocks to go
+larger than 32 megabytes a file. iii - File name layer, to increase the
+size of a name past 14 bytes
+
+b) Supporting much larger files (ii) would require modifying the API to
+recognize that larger files are valid. 
+
+///////////////
+
+Question 2
+
+a) For i-numbers, the name space is the addresses of the memory blocks on
+the disk, the name mapping algorithm involves looking up the inode number
+in the inode_table to return the proper block, and the universe of values
+are the inodes that are associated with i-numbers. 
+
+b) For absolute pathnames, the name space is ASCII characters that are
+valid for pathnames, with the / character acting as a delimiter for 
+directories. The name mapping algorithm is the path name layer that
+tokenizes the pathname string and goes through looking for the correct
+inodes that correspond to each part of the string. The universe of values
+are the inodes that the path name resolves to (and through the inode, the
+entirety of the file via blocks defined from inode)
+
+c) For a block within a file, the name space are the possible indexes of
+the block that can be accessed, the name mapping algorithm is the data
+structure array that represents the block as the expected content of the
+blocks (inodes, direntv6, etc) and the universe of values is the data that
+can be accessed through the data structure array, which is basically bytes
+of the actual data we want to see.
+
+///////////////
+
+Question 3
+
+Location: file.c at line 28. Needs to backtrace up to its calling function
+via a return statement indicating failed status, and the calling function
+can handle printing out the location it was supposed to access, as well as
+a message saying "access failure". 
+
+Location: inode.c at line 23. Look up the inumber in the directories table
+and try to match it to the directory, or leverage a similar strategy to the
+one described for file.c
+
+Location: inode.c at line 55, 63, and 83. All of them are involved in 
+looking up the file block given an inode pointer and a block number. Best
+way to do this is to backtrace to the calling function like in file.c
+
+///////////////
+
+Question 4
+
+a) Developed locally
+
+b) No issues
+
+c) Lot of starter code to go through to make sure I understood things
+
+d) Need to catch up on some reading but otherwise alright
