@@ -13,6 +13,7 @@
 #include "account.h"
 #include "report.h"
 
+#include "pthread.h"
 
 #define MAX_NUM_REPORTS 8       // Maximum number of reports we can store.
 #define MAX_LOG_ENTRIES 1024    // Maximum number of transfer records we can store per report.

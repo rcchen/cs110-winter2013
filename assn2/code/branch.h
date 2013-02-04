@@ -3,10 +3,12 @@
 
 #include <stdint.h>
 
+#include <pthread.h>
 
 typedef uint64_t BranchID;
 
 typedef struct Branch {
+    pthread_mutex_t branchLock; // Locking down the balance
   BranchID branchID;
   AccountAmount balance;
   int numberAccounts;

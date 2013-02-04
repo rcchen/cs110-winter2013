@@ -39,6 +39,9 @@ Branch_Init(Bank *bank, int numBranches, int numAccounts,
       return -1;
     }
 
+    // Initialize the lock on the branch
+    pthread_mutex_init(&(branch->branchLock), NULL);
+
     for (int a = 0; a < accountsPerBranch; a++) {
       Account_Init(bank, &branch->accounts[a], a, i, initialAmount);
       branch->balance += branch->accounts[a].balance;
@@ -54,14 +57,23 @@ Branch_Init(Bank *bank, int numBranches, int numAccounts,
 int
 Branch_UpdateBalance(Bank *bank, BranchID branchID, AccountAmount change)
 {
-  assert(bank->branches);  Y;
-  if (branchID >= bank->numberBranches) {
-    return -1;
-  }
-  AccountAmount oldBalance = bank->branches[branchID].balance; Y;
-  bank->branches[branchID].balance = oldBalance + change; Y;
 
-  return 0;
+    assert(bank->branches);  Y;
+    if (branchID >= bank->numberBranches) {
+        return -1;
+    }
+
+    // Lock this place down
+    pthread_mutex_lock(&(bank->branches[branchID].branchLock));    
+
+    AccountAmount oldBalance = bank->branches[branchID].balance; Y;
+    bank->branches[branchID].balance = oldBalance + change; Y;
+
+    // And the popo are gone, so unlock it
+    pthread_mutex_unlock(&(bank->branches[branchID].branchLock));
+
+    return 0;
+
 }
 
 /*

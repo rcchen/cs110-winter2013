@@ -1,7 +1,7 @@
 #ifndef _BANK_H
 #define _BANK_H
 
-
+#include "pthread.h"
 
 typedef struct Bank {
   unsigned int numberBranches;

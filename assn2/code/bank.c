@@ -11,6 +11,8 @@
 #include "account.h"
 #include "report.h"
 
+#include "pthread.h"
+
 /*
  * allocate the bank structure and initialize the branches.
  */
