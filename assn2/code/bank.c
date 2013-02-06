@@ -83,6 +83,7 @@ Bank_Validate(Bank *bank)
 int
 Bank_Compare(Bank *bank1, Bank *bank2)
 {
+
   int err = 0;
   if (bank1->numberBranches != bank2->numberBranches) {
     fprintf(stderr, "Bank num branches mismatch\n");

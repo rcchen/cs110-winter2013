@@ -33,6 +33,10 @@ typedef struct Report {
 
 static AccountAmount reportingAmount;   // Reporting threshold amount
 static int numWorkers;                  // Number of worker threads in the system
+int count;                              // Count of collected threads
+
+static pthread_cond_t pct;              // Condition variable that allows us to check everyone in
+static pthread_mutex_t lock;            // Lock for the condition variable
  
 /*
  * Initialize the Report module of a bank.  Returns -1 on an error, 0 otherwise.
@@ -58,7 +62,10 @@ Report_Init(Bank *bank, AccountAmount reportAmount, int maxNumWorkers)
   reportingAmount = reportAmount;
   numWorkers = maxNumWorkers;
 
+  pthread_cond_init(&pct, NULL);
+
   return 0;
+
 }
 
 
@@ -118,12 +125,13 @@ Report_DoReport(Bank *bank, int workerNum)
 
   /*
    * Store the overall bank balance for the report.
-   */
+   * */
   int err = Bank_Balance(bank, &rpt->dailyData[rpt->numReports].balance); Y;
   int oldNumReports = rpt->numReports; Y;
   rpt->numReports = oldNumReports + 1; Y;
-
+    
   return err;
+
 }
 
 
