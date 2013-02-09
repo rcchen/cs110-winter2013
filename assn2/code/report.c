@@ -4,7 +4,6 @@
 #include <assert.h>
 #include <inttypes.h>
 
-
 #include "error.h"
 #include "debug.h"
 
@@ -13,6 +12,8 @@
 #include "account.h"
 #include "report.h"
 
+#include "action.h"
+
 #include "pthread.h"
 
 #define MAX_NUM_REPORTS 8       // Maximum number of reports we can store.
@@ -20,7 +21,7 @@
 
 typedef struct Report {
   int numReports;          // Number of complete reports filled in
-  struct {                 // A report consist of:
+  struct DailyData {                 // A report consist of:
     AccountAmount balance; //       The overall bank balance at the report time
     int hasOverflowed;     //       Overflow state - 0 if transfer log hasn't overflowed, 1 otherwise
     int numLogEntries;     //       The number of entries in the log
@@ -29,14 +30,15 @@ typedef struct Report {
       AccountAmount transferSize;
     } transferLog[MAX_LOG_ENTRIES];
   } dailyData[MAX_NUM_REPORTS];
+  struct DailyData workerData[MAX_WORKERS];
 } Report;
 
 static AccountAmount reportingAmount;   // Reporting threshold amount
 static int numWorkers;                  // Number of worker threads in the system
-int count;                              // Count of collected threads
+static int workerCount;                 // Count of collected threads
 
-static pthread_cond_t pct;              // Condition variable that allows us to check everyone in
-static pthread_mutex_t lock;            // Lock for the condition variable
+static pthread_cond_t cond = PTHREAD_COND_INITIALIZER;       // Condition variable that allows us to check everyone in
+static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;    // Lock for the condition variable
  
 /*
  * Initialize the Report module of a bank.  Returns -1 on an error, 0 otherwise.
@@ -62,7 +64,10 @@ Report_Init(Bank *bank, AccountAmount reportAmount, int maxNumWorkers)
   reportingAmount = reportAmount;
   numWorkers = maxNumWorkers;
 
-  pthread_cond_init(&pct, NULL);
+  // Initialize this to zero, we'll use it to track workers
+  workerCount = 0;
+
+  pthread_cond_init(&cond, NULL);
 
   return 0;
 
@@ -79,6 +84,7 @@ int
 Report_Transfer(Bank *bank, int workerNum, AccountNumber accountNum,
                 AccountAmount amount)
 {
+
   // Compute the absolute amount of the transfer; withdrawals come in as negative numbers.
   AccountAmount amountAbs = (amount < 0) ? -amount : amount;   Y;
   if (amountAbs < reportingAmount) {
@@ -93,18 +99,31 @@ Report_Transfer(Bank *bank, int workerNum, AccountNumber accountNum,
       return 0;
   }
 
-  if (rpt->dailyData[r].numLogEntries >= MAX_LOG_ENTRIES) {
+
+  if (rpt->workerData[workerNum].numLogEntries >= MAX_LOG_ENTRIES) {
+    rpt->workerData[workerNum].hasOverflowed = 1;
+    return 0;
+  }
+
+  /*if (rpt->dailyData[r].numLogEntries >= MAX_LOG_ENTRIES) {
     // Current report is full, mark it as overflowed and return.
     rpt->dailyData[r].hasOverflowed = 1;
     return 0;
-  }
-  // Add the record to the end of the log of records.
-  int ent = rpt->dailyData[r].numLogEntries; Y;
-  rpt->dailyData[r].transferLog[ent].accountNum = accountNum; Y;
-  rpt->dailyData[r].transferLog[ent].transferSize = amount;   Y;
-  rpt->dailyData[r].numLogEntries = ent + 1; Y;
+  }*/
+
+  int ent= rpt->workerData[workerNum].numLogEntries; Y;
+  //int ent = rpt->dailyData[r].numLogEntries; Y;
+
+  rpt->workerData[workerNum].transferLog[ent].accountNum = accountNum; Y;
+  rpt->workerData[workerNum].transferLog[ent].transferSize = amount; Y;
+  rpt->workerData[workerNum].numLogEntries = ent + 1; Y; 
+
+  //rpt->dailyData[r].transferLog[ent].accountNum = accountNum; Y;
+  //rpt->dailyData[r].transferLog[ent].transferSize = amount;   Y;
+  //rpt->dailyData[r].numLogEntries = ent + 1; Y;
 
   return 0;
+
 }
 
 /*
@@ -114,6 +133,7 @@ Report_Transfer(Bank *bank, int workerNum, AccountNumber accountNum,
 int
 Report_DoReport(Bank *bank, int workerNum)
 {
+
   Report *rpt = bank->report;
 
   assert(rpt); Y;
@@ -123,14 +143,39 @@ Report_DoReport(Bank *bank, int workerNum)
       return -1;
   }
 
+  // Set a lock on the report
+  pthread_mutex_lock(&lock);
+
+  workerCount++;
+  while (workerCount < numWorkers) {
+    pthread_cond_wait(&cond, &lock);
+  }
+
+  // Routine to add everything to the balance with a single thread
+  if (workerCount == numWorkers) {
+    for (int i = 0; i < numWorkers; i++) {
+        int err = Bank_Balance(bank, &rpt->workerData[i].balance); Y;
+    } int oldNumReports = rpt->numReports; Y;
+    rpt->numReports = oldNumReports + 1; Y;
+    workerCount++;
+  }
+  
+  pthread_cond_broadcast(&cond);
+  pthread_mutex_unlock(&lock);
+
+  // int oldNumReports = rpt->numReports; Y;
+  // rpt->numReports = oldNumReports + 1; Y;
+
   /*
    * Store the overall bank balance for the report.
    * */
-  int err = Bank_Balance(bank, &rpt->dailyData[rpt->numReports].balance); Y;
+
+  /*int err = Bank_Balance(bank, &rpt->dailyData[rpt->numReports].balance); Y;
   int oldNumReports = rpt->numReports; Y;
-  rpt->numReports = oldNumReports + 1; Y;
-    
-  return err;
+  rpt->numReports = oldNumReports + 1; Y;*/
+
+  return 0;
+  // return err;
 
 }
 

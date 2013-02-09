@@ -10,8 +10,8 @@ typedef int64_t AccountAmount;
 
 typedef struct Account {
   AccountNumber accountNumber;
-  AccountAmount balance;
-  pthread_mutex_t lock;
+  AccountAmount balance;        // Protected by the lock
+  pthread_mutex_t lock;         // Lock used in Account
 } Account;
 
 

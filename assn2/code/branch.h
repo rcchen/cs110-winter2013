@@ -8,9 +8,9 @@
 typedef uint64_t BranchID;
 
 typedef struct Branch {
-    pthread_mutex_t branchLock; // Locking down the balance
+  pthread_mutex_t branchLock;   // Locking down the balance
   BranchID branchID;
-  AccountAmount balance;
+  AccountAmount balance;        // Protected by branchLock
   int numberAccounts;
   Account   *accounts;
 } Branch;

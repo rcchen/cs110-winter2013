@@ -1,7 +1,9 @@
 #!/bin/bash
-echo "Run with how many threads: "
-read threads
-for i in {1..7}
+for i in {7..7}
 do
-    ./bankdriver -w$threads -t$i
+    for j in {1,2,4,8,16}
+    do
+        echo "./bankdriver -w$j -t$i -y running"
+        ./bankdriver -w$j -t$i -y5
+    done
 done

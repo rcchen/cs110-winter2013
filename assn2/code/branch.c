@@ -63,13 +63,13 @@ Branch_UpdateBalance(Bank *bank, BranchID branchID, AccountAmount change)
         return -1;
     }
 
-    // Lock this place down
+    // Lock this branch down while updating its balance
     pthread_mutex_lock(&(bank->branches[branchID].branchLock));    
 
     AccountAmount oldBalance = bank->branches[branchID].balance; Y;
     bank->branches[branchID].balance = oldBalance + change; Y;
 
-    // And the popo are gone, so unlock it
+    // Unlock the branch when balance update is done
     pthread_mutex_unlock(&(bank->branches[branchID].branchLock));
 
     return 0;
@@ -90,6 +90,7 @@ Branch_Balance(Bank *bank, BranchID branchID, AccountAmount *balance)
   }
 
   *balance = bank->branches[branchID].balance;  Y;
+
   /* It should be the case that the balance of a branch matches the sum 
    * of all the accounts in the branch.  The following routine validates 
    * this assumption but is far too expense to run in normal operation. 

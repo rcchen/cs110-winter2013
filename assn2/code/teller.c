@@ -82,6 +82,7 @@ Teller_DoTransfer(Bank *bank, AccountNumber srcAccountNum,
     return ERROR_ACCOUNT_NOT_FOUND;
   }
 
+
   if (amount > Account_Balance(srcAccount)) {
     return ERROR_INSUFFICIENT_FUNDS;
   }

@@ -1,0 +1,40 @@
+Question 1
+
+a) 
+
+b) Approach is to first look at the variables that are being modified and
+could be touched by multiple threads at a time. This was true for object
+instances, so it made sense to be able to set locks on Account and Branch
+classes so multiple threads would not be modifying a single Account at the
+same time or a single Branch at the same time. 
+
+///////////////
+
+Question 2
+
+
+///////////////
+
+Question 3
+
+a) The race condition that would cause this to occur is on account->balance,
+where the first thread would take the banker's checking account down to zero
+while the second thread checks if there are insufficient funds while there 
+is still suffiient funds in the checking account. This results in subtraction
+of some amount to become a negative number, which would result in assigning
+the bit pattern for the negative number in 2's complement to account->balance
+which would give you some massive number. Here's what the threading looks like
+
+One: chk bal ($5)             withdraw ($5, bal $0)
+Two:             chk bal ($5)                       withdraw ($5, bal $2^64-5)
+
+b) It is more possible that this situation will occur in the 32-bit machine
+because a 64-bit unsigned long long is stored as two 32-bit unsigned longs, so
+there is more of a chance that interleavings will happen between these two
+longs. 
+
+///////////////
+
+Question 4
+
+Developed locally without a VM (Mac/10.8.2)
