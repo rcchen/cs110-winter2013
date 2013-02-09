@@ -43,16 +43,22 @@ Bank_Balance(Bank *bank, AccountAmount *balance)
 {
   assert(bank->branches);
   AccountAmount bankTotal = 0;
+
+  // First lock down all the branches
+  for (unsigned int i = 0; i < bank->numberBranches; i++)
+    pthread_mutex_lock(&bank->branches[i].branchLock);
+
   for (unsigned int branch = 0; branch < bank->numberBranches; branch++) {
-    pthread_mutex_lock(&bank->branches[branch].branchLock);
     AccountAmount branchBalance;
     int err = Branch_Balance(bank,bank->branches[branch].branchID, &branchBalance);
     if (err < 0) {
       return err;
     } 
     bankTotal += branchBalance;
-    pthread_mutex_unlock(&bank->branches[branch].branchLock);
   }
+
+  for (unsigned int j = 0; j < bank->numberBranches; j++)
+    pthread_mutex_unlock(&bank->branches[j].branchLock);
 
   *balance = bankTotal;
 

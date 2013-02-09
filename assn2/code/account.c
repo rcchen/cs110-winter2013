@@ -77,6 +77,7 @@ Account_Adjust(Bank *bank, Account *account, AccountAmount amount,
     pthread_mutex_unlock(&(account->lock)); // Unlocks the account object
   Y;
 }
+
 /*
  * return the balance of the account.
  */

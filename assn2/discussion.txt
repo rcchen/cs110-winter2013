@@ -1,17 +1,29 @@
 Question 1
 
-a) 
+a) Account and branch transfers can be concurrently done, interbranch
+transfers can not be concurrently done. 
 
 b) Approach is to first look at the variables that are being modified and
 could be touched by multiple threads at a time. This was true for object
 instances, so it made sense to be able to set locks on Account and Branch
 classes so multiple threads would not be modifying a single Account at the
-same time or a single Branch at the same time. 
+same time or a single Branch at the same time. The next part involves
+fixing the reporting mechanism so worker logs do not interfere with each
+other. This is accomplished without using locks by creating another struct
+that allows workers to maintain their own daily reports for the entire day,
+then set a condition variable to collect the workers at the end except
+for the last worker, which is used to sum up the totals and record it for
+the bank. 
 
 ///////////////
 
 Question 2
 
+Eliminate interbranch transfers, because it would no longer involve locking
+down two branches at once in order for money to be transferred from an 
+account in one branch to an account in another branch. All transfers can 
+only happen within a single branch, which would be much speedier (albeit
+far less convenient for customers)
 
 ///////////////
 
