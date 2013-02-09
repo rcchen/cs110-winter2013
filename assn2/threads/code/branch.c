@@ -64,13 +64,13 @@ Branch_UpdateBalance(Bank *bank, BranchID branchID, AccountAmount change)
     }
 
     // Lock this branch down while updating its balance
-    pthread_mutex_lock(&(bank->branches[branchID].branchLock));    
+    //pthread_mutex_lock(&(bank->branches[branchID].branchLock));    
 
     AccountAmount oldBalance = bank->branches[branchID].balance; Y;
     bank->branches[branchID].balance = oldBalance + change; Y;
 
     // Unlock the branch when balance update is done
-    pthread_mutex_unlock(&(bank->branches[branchID].branchLock));
+    //pthread_mutex_unlock(&(bank->branches[branchID].branchLock));
 
     return 0;
 

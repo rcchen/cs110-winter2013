@@ -68,13 +68,13 @@ void
 Account_Adjust(Bank *bank, Account *account, AccountAmount amount,
                int updateBranch)
 {
-    pthread_mutex_lock(&(account->lock)); // Locks this account object
+    //pthread_mutex_lock(&(account->lock)); // Locks this account object
     account->balance = Account_Balance(account) + amount;
     if (updateBranch) {
     Branch_UpdateBalance(bank, AccountNum_GetBranchID(account->accountNumber),
                          amount);
     }
-    pthread_mutex_unlock(&(account->lock)); // Unlocks the account object
+    //pthread_mutex_unlock(&(account->lock)); // Unlocks the account object
   Y;
 }
 
