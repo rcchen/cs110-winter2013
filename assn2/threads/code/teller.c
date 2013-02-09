@@ -64,6 +64,8 @@ Teller_DoWithdraw(Bank *bank, AccountNumber accountNum, AccountAmount amount)
   pthread_mutex_lock(&bank->branches[AccountNum_GetBranchID(accountNum)].branchLock);
 
   if (amount > Account_Balance(account)) {
+    pthread_mutex_unlock(&bank->branches[AccountNum_GetBranchID(accountNum)].branchLock);
+    pthread_mutex_unlock(&account->lock);
     return ERROR_INSUFFICIENT_FUNDS;
   }
 
