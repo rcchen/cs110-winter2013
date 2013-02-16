@@ -5,7 +5,7 @@
 # disk images and making sure the program generate the correct output.
 #
 
-TDIR=disks
+TDIR=/Users/rogerchen/Dropbox/2012-13/winter2013/cs110/code/assn3/optimize/testdisks
 
 
 TMP_FILE=`mktemp "/tmp/tp110-XXXXXX"`

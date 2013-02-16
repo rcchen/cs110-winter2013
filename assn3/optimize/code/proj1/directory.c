@@ -36,6 +36,9 @@ directory_findname(struct unixfilesystem *fs, const char *name,
     // Loop through the blocks
     for (int bno = 0; bno < numBlocks; bno++) {
 
+        // Get the number of bytes we want to consider
+        int bytes = file_getblock(fs, dirinumber, bno, dir);
+
         // Loop through the directory entries
         for (int i = 0; i < numdirent; i++) {
 

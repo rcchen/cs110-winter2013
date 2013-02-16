@@ -40,6 +40,14 @@ int
 inode_indexlookup(struct unixfilesystem *fs, struct inode *inp, int blockNum)
 {
 
+    // BREAK
+    /*if (blockNum == 14335) {
+        printf("ARTIFICIAL BREAK");
+    }*/
+
+    // Get the size of the inode
+    int inodesize = inode_getsize(inp);
+
     // Check to see if this is a large file or not
     if (inp->i_mode & ILARG) {
 
@@ -81,6 +89,8 @@ inode_indexlookup(struct unixfilesystem *fs, struct inode *inp, int blockNum)
 
             // Access the correct block number
             int indirectindex = blockNum - (blockNum / NUM_BLOCKS) * NUM_BLOCKS;
+
+            // printf("%d\n", indirectindex);
 
             return buf[indirectindex];
 
