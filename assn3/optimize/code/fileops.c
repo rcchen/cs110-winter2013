@@ -166,6 +166,40 @@ Fileops_getchar(int fd)
 }
 
 /*
+ * Retrieves the inumber. Returns -1 on unable to find file
+ */
+int
+Fileops_getinumber(int fd)
+{
+	return pathname_lookup(unixfs, openFileTable[fd].pathname);
+}
+
+/*
+ * Get the size of an inode
+ */
+int
+Fileops_getinodesize(int inumber)
+{
+
+  struct inode in;
+  int err;
+  int size;
+
+  err = inode_iget(unixfs, inumber,&in);
+  if (err < 0) {
+    return err;
+  }
+  if (!(in.i_mode & IALLOC)) {
+    return -1;
+  }
+
+  size = inode_getsize(&in);
+
+  return size;
+
+}
+
+/*
  * Implement the Unix read system call. Number of bytes returned.  Return -1 on
  * err.
  */

@@ -1,0 +1,16 @@
+Starting index build ....
+Index disk /usr/class/cs110/assn3/testdisks/simple.img (latency 8000) completed in 2.704049 seconds
+Word fooA @ /fooA:1
+Word fooB @ /fooB:1
+Word fooC @ /fooC:1
+Word fooD not found
+QueryFile /usr/class/cs110/assn3/testdisks/simple.dat took 2.000000 microseconds
+************ Stats ***************
+Disksim: 340 reads, 0 writes
+Diskimg: 340 reads, 0 writes
+Scan: 3 files, 3 words, 15 characters, 1 directories, 5 dirents, 0 duplicates
+Index: 3 stores, 3 allocates, 8 lookups
+Pathstore:  3 stores, 0 duplicates
+Pathstore2: 3 compares, 3 checksumdiff, 0 comparesuccess, 0 comparefail
+Fileops: 4 opens, 6 reads, 99 getchars, 4 isfiles
+Usage: 2.712169 usertime, 0.008000 systemtime, 8 voluntary ctxt switches, 242 involuntary ctxt switches

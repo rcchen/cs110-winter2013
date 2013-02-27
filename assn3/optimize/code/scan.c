@@ -53,9 +53,12 @@ Scan_File(char *inpathname, Index *ind, Pathstore *store, int discardDups)
   int ch = Fileops_getchar(fd);
   numchars++;
 
+  int inumber = Fileops_getinumber(fd);
+  int size = Fileops_getinodesize(inumber);
+
   while (!(ch < 0)) {   // Process words until we reach the end of the file
     while (!isalpha(ch)) {    // Skip any leading non-alpha characters
-      ch = Fileops_getchar(fd);
+      ch = Fileops_getcharopt(fd, inumber, size); //Fileops_getchar(fd);
       if (ch < 0) {Fileops_close(fd); return 0; }
       numchars++;
     }
@@ -67,7 +70,7 @@ Scan_File(char *inpathname, Index *ind, Pathstore *store, int discardDups)
     char word[MAX_WORD_SIZE+1];
     while ((pos < MAX_WORD_SIZE) && !(ch < 0) && isalpha(ch)) {
       word[pos++] = ch;
-      ch = Fileops_getchar(fd);
+      ch = Fileops_getcharopt(fd, inumber, size);
       numchars++;
     }
     numwords++;
