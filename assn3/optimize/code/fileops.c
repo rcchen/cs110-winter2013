@@ -83,6 +83,37 @@ Fileops_open(char *pathname)
   return fd;
 }
 
+/*
+ * Fetch the next character from the file. Return -1 if at end of file.
+ */
+int
+Fileops_getcharopt(int fd, int inumber, int size)
+{
+  struct inode in;
+  unsigned char buf[DISKIMG_SECTOR_SIZE];
+  int bytesMoved;
+  int err;
+  int blockNo, blockOffset;
+
+  numgetchars++;
+
+  if (openFileTable[fd].cursor >= size) return -1; // Finished with file
+
+  blockNo = openFileTable[fd].cursor / DISKIMG_SECTOR_SIZE;
+  blockOffset =  openFileTable[fd].cursor % DISKIMG_SECTOR_SIZE;
+
+  bytesMoved = file_getblock(unixfs, inumber,blockNo,buf);
+  if (bytesMoved < 0) {
+    return -1;
+  }
+  assert(bytesMoved > blockOffset);
+
+  openFileTable[fd].cursor += 1;
+
+  return (int)(buf[blockOffset]);
+}
+
+
 
 /*
  * Fetch the next character from the file. Return -1 if at end of file.
@@ -144,10 +175,35 @@ Fileops_read(int fd, char *buffer, int length)
   int i;
   int ch;
 
+  int inumber;
+  struct inode in;
+  unsigned char buf[DISKIMG_SECTOR_SIZE];
+  int bytesMoved;
+  int err, size;
+  int blockNo, blockOffset;
+
+  if (openFileTable[fd].pathname == NULL)
+    return -1;  // fd not opened.
+
+  inumber = pathname_lookup(unixfs, openFileTable[fd].pathname);
+  if (inumber < 0) {
+    return inumber; // Can't find file
+  }
+
+  err = inode_iget(unixfs, inumber,&in);
+  if (err < 0) {
+    return err;
+  }
+  if (!(in.i_mode & IALLOC)) {
+    return -1;
+  }
+
+  size = inode_getsize(&in);
+
   numreads++;
 
   for (i = 0; i < length; i++) {
-    ch = Fileops_getchar(fd);
+    ch = Fileops_getcharopt(fd, inumber, size);
     if (ch == -1) break;
     buffer[i] = ch;
   }
