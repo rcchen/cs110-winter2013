@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <getopt.h>
 #include <string.h>
+#include <time.h>
 
 #include <sys/time.h>
 #include <sys/resource.h>
@@ -154,6 +155,10 @@ static Pathstore *store = NULL;
 int
 main(int argc, char *argv[])
 {
+
+  // Initialize the random seed
+  srand(time(NULL));
+
   int opt;
   char *queryWord = NULL;
   char *queryFile = NULL;

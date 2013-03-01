@@ -11,6 +11,9 @@
 #include "diskimg.h"
 #include "disksim.h"
 
+#include "cachemem.h"
+#include <stdlib.h>
+
 #include "debug.h"
 
 
@@ -43,7 +46,29 @@ int
 diskimg_readsector(int fd, int sectorNum, void *buf)
 {
   numreads++;
-  return disksim_readsector(fd, sectorNum, buf);
+  
+  for (int i = 0; i < sectorsFilled; i++)
+  {
+	if (sectors[i] == sectorNum)
+	{
+	  memcpy(buf, (char*)cacheMemPtr + 512 * i, 512);
+	  return 512;
+	}
+  }
+
+  int bytesRead = disksim_readsector(fd, sectorNum, buf);
+
+  int sectorIndex = sectorsFilled;
+  if (sectorsFilled == 2047)
+    sectorIndex = rand() % 2048;
+  else
+	sectorsFilled++;
+
+  sectors[sectorIndex] = sectorNum;
+  memcpy((char*)cacheMemPtr + 512 * sectorIndex, buf, 512);
+
+  return bytesRead;
+  //return disksim_readsector(fd, sectorNum, buf);
 }
 /*
  * Write the specified sector to the disk.  Return number of bytes written,

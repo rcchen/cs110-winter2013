@@ -16,6 +16,12 @@
 
 int cacheMemSizeInKB;
 void *cacheMemPtr;
+int sectorsFilled;
+int sectors[2048]; // Don't hardcode
+int diskSize;
+
+// Figure out cache hit rates for different kinds of blocks
+// Getting a lot of misses on data blocks, then separate cache for data blocks
 
 /*
  * Allocate memory of the specified size for the data cache optimizations
@@ -40,6 +46,7 @@ CacheMem_Init(int sizeInKB)
   }
   cacheMemSizeInKB = sizeInKB;
   cacheMemPtr = memPtr;
+  sectorsFilled = 0;
   return 0;
 }
 
