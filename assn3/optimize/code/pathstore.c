@@ -18,6 +18,7 @@
 typedef struct PathstoreElement {
   char *pathname;
   struct PathstoreElement *nextElement;
+  char checksum[CHKSUMFILE_SIZE];
 } PathstoreElement;
 
 static uint64_t numdifferentfiles = 0;
@@ -90,6 +91,15 @@ Pathstore_path(Pathstore *store, char *pathname, int discardDuplicateFiles)
   e->nextElement = store->elementList;
   store->elementList = e;
 
+  /* Hashing stuff */
+
+  struct unixfilesystem *fs = (struct unixfilesystem *) (store->fshandle);
+  int err = chksumfile_bypathname(fs, pathname, e->checksum);
+  if (err < 0) {
+    fprintf(stderr,"Can't checksum path %s\n", pathname);
+    return 0;
+  }
+
   return e->pathname;
 
 }
@@ -102,10 +112,22 @@ SameFileIsInStore(Pathstore *store, char *pathname)
 {
   PathstoreElement *e = store->elementList;
 
+  char chksum[CHKSUMFILE_SIZE];
+  struct unixfilesystem *fs = (struct unixfilesystem *) (store->fshandle);
+  int err = chksumfile_bypathname(fs, pathname, chksum);
+  if (err < 0) {
+    fprintf(stderr,"Can't checksum path %s\n", pathname);
+	return 0;
+  }
+
   while (e) {
+  	if (chksumfile_compare(chksum, e->checksum) != 0) {
+      return 1;  // Checksum mismatch, not the same file
+    }
+	/*
     if (IsSameFile(store, pathname, e->pathname)) {
       return 1;  // In store already
-    }
+    }*/
     e = e->nextElement;
   }
   return 0; // Not found in store
