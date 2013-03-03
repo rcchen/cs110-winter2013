@@ -31,6 +31,9 @@ static uint64_t numisfiles = 0;
 static struct {
   char *pathname;    // absolute pathname NULL if slot is not used.
   int  cursor;       // Current position in the file
+  unsigned char buf[DISKIMG_SECTOR_SIZE];	// Buffer for stuff
+  int blockNo;		// blockNo
+  int bytesMoved;	// bytesMoved
 } openFileTable[MAX_FILES];
 
 
@@ -99,18 +102,25 @@ Fileops_getcharopt(int fd, int inumber, int size)
 
   if (openFileTable[fd].cursor >= size) return -1; // Finished with file
 
+  // Calculate the block number and offset
   blockNo = openFileTable[fd].cursor / DISKIMG_SECTOR_SIZE;
   blockOffset =  openFileTable[fd].cursor % DISKIMG_SECTOR_SIZE;
 
-  bytesMoved = file_getblock(unixfs, inumber,blockNo,buf);
-  if (bytesMoved < 0) {
+  // Check to see if we are able to yank from the cache or if we need to do a file_getblock call
+  if (openFileTable[fd].blockNo == NULL || openFileTable[fd].blockNo != blockNo) {
+	openFileTable[fd].bytesMoved = file_getblock(unixfs, inumber, blockNo, openFileTable[fd].buf);
+	openFileTable[fd].blockNo = blockNo;
+  }
+
+  if (openFileTable[fd].bytesMoved < 0) {
     return -1;
   }
-  assert(bytesMoved > blockOffset);
+
+  assert(openFileTable[fd].bytesMoved > blockOffset);
 
   openFileTable[fd].cursor += 1;
 
-  return (int)(buf[blockOffset]);
+  return (int)(openFileTable[fd].buf[blockOffset]);
 }
 
 

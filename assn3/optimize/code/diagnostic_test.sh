@@ -62,6 +62,25 @@ rm -f $TMP_FILE
 
 echo "Output for words in large.dat on large.img is correct."
 
+./disksearch -l 0 -q -f $TDIR/vlarge.dat $TDIR/vlarge.img > $TMP_FILE
+if [ ${?} -ne "0" ]; then
+  echo "Running disksearch on vlarge.dat failed."
+  rm -f $TMP_FILE
+  exit 1
+fi
+
+diff -q $TMP_FILE $TDIR/vlarge.out
+if [ ${?} -ne "0" ]; then
+  echo "Compare on run on vlarge.dat failed."
+  rm -f $TMP_FILE
+  exit 1
+fi
+rm -f $TMP_FILE
+
+echo "Output for words in vlarge.dat on vlarge.img is correct."
+
+
+
 echo "It appears to work!"
 exit 0
 

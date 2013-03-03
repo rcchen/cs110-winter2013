@@ -13,6 +13,7 @@
 
 #include "cachemem.h"
 #include <stdlib.h>
+#include <string.h>
 
 #include "debug.h"
 
@@ -59,8 +60,8 @@ diskimg_readsector(int fd, int sectorNum, void *buf)
   int bytesRead = disksim_readsector(fd, sectorNum, buf);
 
   int sectorIndex = sectorsFilled;
-  if (sectorsFilled == 2047)
-    sectorIndex = rand() % 2048;
+  if (sectorsFilled == numSectors - 1)
+    sectorIndex = rand() % numSectors;
   else
 	sectorsFilled++;
 
